@@ -1,0 +1,192 @@
+@font-face {
+    font-family: comforta_font;
+    src: url(Comfortaa-Bold.ttf);}
+
+@keyframes rise {
+    from {top: 100vh;}
+    to {top: 0px;}
+}
+
+@keyframes slide {
+    from {left: 100vh;}
+    to {left: 0px;}
+}
+
+.rise_animation {
+    position: relative;
+    animation-name: rise;
+    animation-timing-function: cubic-bezier(0, 1, .75, 1);
+    animation-delay: 0s;
+    animation-iteration-count: 1;
+    animation-direction: normal;
+    animation-fill-mode: forwards;
+}
+
+.slide_animation {
+    position: relative;
+    animation-name: slide;
+    animation-timing-function: cubic-bezier(.26, .59, .3, 1.14);
+    animation-delay: 0s;
+    animation-iteration-count: 1;
+    animation-direction: normal;
+    animation-fill-mode: forwards;
+}
+
+.status_label {
+    font-size: 1.2em;
+    font-weight: 550;
+    text-transform: uppercase;
+    padding: 0.4% 1%;
+    border-radius: 5px;
+    background-color: rgb(239, 239, 239);
+    color: crimson;
+}
+
+.message_container {
+    font-family: comforta_font;
+    margin: 0 auto;
+    width: 60%;
+    text-align: left;
+    padding: 10px;
+    padding-left: 35px;
+    min-height: 300px;
+    border-left-style: solid;
+    border-left-color: rgb(0, 119, 255);
+    border-radius: 10px;
+    background-color: #FAF9F6;
+    /*rgba(173, 216, 230, 0.5)*/
+    word-wrap: break-word;
+}
+
+.sticky_container {
+    position: fixed;
+    top: 72%;
+    right: 7%;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+    z-index: 2000;
+}
+
+#scroll_btn {
+    display: block;
+    font-weight: 300;
+    color: #ffff;
+    background-color: rgb(90, 90, 90);
+    border-width: 0px;
+    border-radius: 25px;
+    padding: 5px;
+    transition: opacity 300ms ease-in-out;}
+#scroll_btn:hover {
+    text-shadow: 2px 2px 5px rgba(200, 200, 200, .9)}
+#scroll_btn:active {
+    background-color: rgb(70, 70, 70);}
+
+#send_btn {
+    font-weight: 700;
+    background-color: rgb(245, 221, 25);
+    border-radius: 20px;
+    border-color: rgba(242, 237, 152, .5);
+    padding: 10px 18px;
+    margin-top: 5px;}
+#send_btn:hover {
+    text-shadow: 2px 2px 4px rgba(20, 20, 20, .35)}
+#send_btn:active {
+    border-color: #000;
+}
+
+
+#clear_btn {
+    font-size: 0.9em;
+    font-weight: 550;
+    text-transform: uppercase;
+    margin-right: 2%;
+    padding: 0.4% 0.5%;
+    border-radius: 5px;
+    border-width: 0px;
+    background-color: rgb(239, 239, 239);
+    margin-left: 2%;
+    cursor: pointer;}
+#clear_btn:hover {
+    color: rgb(117, 117, 117);}
+#clear_btn:active {
+    color: hsl(100, 80%, 60%);}
+
+input[type="checkbox"].toggle+label {
+    /*visible label*/
+    font-size: 0.9em;
+    font-weight: 550;
+    text-transform: uppercase;
+    margin-right: 2%;
+    padding: 0.4% 0.5%;
+    border-radius: 5px;
+    background-color: rgb(239, 239, 239);
+
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;}
+input[type="checkbox"].toggle {
+    opacity: 0;
+    position: absolute;
+    top: -9000px;
+    left: -9000px;}
+input[type="checkbox"].toggle+label:hover {
+    color: rgb(117, 117, 117);}
+input[type="checkbox"].toggle+label::before {
+    content: "";
+    width: 2em;
+    height: 1em;
+    border-radius: 1em;
+    background-color: rgb(117, 117, 117);
+    margin-right: 0.25em;}
+input[type="checkbox"].toggle+label::after {
+    position: absolute;
+    content: "";
+    width: 0.9em;
+    height: 0.9em;
+    border-radius: 1em;
+    background-color: hsl(0, 80%, 60%);
+    transition: 200ms ease-in-out;}
+input[type="checkbox"].toggle:checked+label::after {
+    transform: translateX(1.1em);
+    background-color: hsl(100, 80%, 60%);
+}
+
+body {
+    background-color: rgba(173, 216, 230, 0.5);
+    text-align: center;
+    font-family: Arial, sans-serif;
+    font-size: 14pt;
+    overflow-x: hidden;
+}
+
+header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+    background-color: #333;
+    z-index: 1000;
+}
+
+section {
+    position: absolute;
+    top: 80px;
+    left: 0;
+    width: 100%;
+    padding-top: calc(1% + 1vh);
+}
+
+section input {
+    margin-top: 5px;
+    background-color: rgb(245, 221, 25);
+    border-width: .1px;
+    border-radius: 15px;
+    border-color: rgba(242, 237, 152, .5);
+    padding: 10px 18px;
+}

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+    <title>Http Web Chat</title>
+
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='styles.css')}}">
+    <script src="{{url_for('static',filename='audio_script.js')}}"></script>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+        integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.js"
+        integrity="sha512-9mpsATI0KClwt+xVZfbcf2lJ8IFBAwsubJ6mI3rtULwyM3fBmQFzj0It4tGqxLOGQwGfJdk/G+fANnxfq9/cew=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+        //scroll button popup
+        $(window).scroll(function () {
+            if ($(window).scrollTop() + $(window).height() < $(document).height() - 70) {
+                $('#scroll_btn').attr('style', 'opacity: 1;');
+            }
+            else {
+                $('#scroll_btn').attr('style', 'opacity: 0;');
+            }
+        });
+        jQuery(function ($) {
+            $('#message_box').on('scroll', function () {
+                if (Math.round($(this).scrollTop() + $(this).innerHeight()) < $(this)[0].scrollHeight - 70) {
+                    $('#scroll_btn').attr('style', 'opacity: 1;');
+                }
+                else {
+                    $('#scroll_btn').attr('style', 'opacity: 0;');
+                }
+            });
+        });
+        function scroll_to_bottom() {
+            if (document.getElementById("scroll_toggle").checked) {
+                elm = document.getElementById('message_box')
+                elm.scroll({ top: elm.scrollHeight, behavior: "smooth" })
+            }
+            else {
+                window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
+            }
+        };
+        //message input firing send button
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        };
+        async function _manual_active() {
+            document.getElementById("send_btn").focus();
+            await sleep(80)
+            document.getElementById("message").focus();
+        };
+        function checkForEnterKey() {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                _manual_active()
+                document.getElementById("send_btn").click();
+            };
+        };
+        //notification sound
+        function playSound() {
+            const audio = new Audio('https://dl.dropbox.com/s/7grxp1ojb40u34s/notification.mp3?dl=0');
+            audio.play();
+        };
+        //header buttons
+        function toggle_scroll(cb) {
+            if (cb.checked) {
+                $('#message_box').attr('style', 'animation-duration:1s;max-height:60vh;overflow-y:scroll;');
+            } else {
+                $('#message_box').attr('style', 'animation-duration:1s;');
+            }
+        }
+        function clear_messages() {
+            document.getElementById('message_box').innerHTML = ''
+        }
+        function toggle_dark_mode(cb) {
+            const message_box = document.getElementById("message_box");
+            const body_elm = document.getElementsByTagName('body')[0];
+            const header_elm = document.getElementsByTagName('header')[0];
+            if (cb.checked) {
+                message_box.classList.add("dark_mode");
+                body_elm.classList.add("dark_mode");
+                header_elm.classList.add("dark_mode");
+            } else {
+                message_box.classList.remove("dark_mode");
+                body_elm.classList.remove("dark_mode");
+                header_elm.classList.remove("dark_mode");
+            }
+        }
+        // SERVER MANAGMENT
+        //http://192.168.1.15:5000
+        $(document).ready(function () {
+            var socket = io.connect("http://localhost:698")
+            var user_id
+            var current_users
+            socket.on('connect', function () {
+                socket.send("[User connected]");
+                user_id = Math.floor(Math.random() * 10000);
+                document.getElementById('status_lbl').innerHTML = 'Online'
+                $('#status_lbl').attr('style', 'animation-duration:1.25s; color:limegreen;');
+            });
+
+            socket.on('message', function (data) {
+                let user_color = data[2] % 360
+                if (data[1].indexOf('data_b64;;') == 0) {
+                    $('#message_box').append('<p><b style="color:hsl(' + user_color + ',100%,40%)">' + data[0] + '</b>: ');
+                    var voice_blob = b64toBlob(data[1].replace('data_b64;;', ''), 'audio/mp3')
+                    var blobUrl = URL.createObjectURL(voice_blob);
+                    $('#message_box').append('<audio style="width:55vw" controls><source src="' + blobUrl + '" type="audio/mpeg"></audio>');
+                } else {
+                    $('#message_box').append('<p><b style="color:hsl(' + user_color + ',100%,40%)">' + data[0] + '</b>: ' + data[1]);
+                };
+                if (data[2] != user_id) {
+                    playSound();
+                };
+            });
+
+            socket.on('UserDict', function (data) {
+                current_users = data;
+            });
+            socket.on('History', function (data) {
+                for (let [ind, x] of Object.entries(data)) {
+                    let user_color = x[2] % 360
+                    if (x[1].indexOf('data_b64;;') == 0) {
+                        $('#message_box').append('<p><b style="color:hsl(' + user_color + ',100%,32%)">' + x[0] + '</b>: ');
+                        var voice_blob = b64toBlob(x[1].replace('data_b64;;', ''), 'audio/mp3')
+                        var blobUrl = URL.createObjectURL(voice_blob);
+                        //const buf = await voice_blob.arrayBuffer();
+                        //const blobUrl = URL.createObjectURL(new Blob([buf]));
+                        $('#message_box').append('<audio style="width:55vw" controls><source src="' + blobUrl + '" type="audio/mpeg"></audio>');
+                    } else {
+                        $('#message_box').append('<p><b style="color:hsl(' + user_color + ',100%,32%)">' + x[0] + '</b>: ' + x[1]);
+                    };
+                };
+            });
+
+            $('#send_btn').on('click', function () {
+                if (($('#username').val() != '' && current_users.hasOwnProperty($('#username').val()) == false) || (current_users[$('#username').val()] == user_id)) {
+                    if (document.getElementById("username").style.display != "none") {
+                        document.getElementById("username").style.display = "none";
+                        socket.send("[User config]*" + $('#username').val() + "*" + user_id.toString());
+                    };
+                    socket.send(user_id.toString() + '*' + $('#username').val() + '*' + $('#message').val());
+                    $('#message').val('');
+                } else {
+                    $('#username').val('');
+                    $('#username').attr('placeholder', 'Invalid');
+                };
+            });
+
+            //button change and record
+            var timeout = 0;
+            $('#send_btn').on('mousedown touchstart', function () {
+                timeout = setTimeout(async function () {
+                    document.getElementById("mic_toggle").checked = true;
+                    document.getElementById("mic_toggle_l").style.visibility = "visible";
+                    $('#send_btn').attr('style', 'animation: squeeze 150ms ease 1;opacity:0;');
+                    $('#mic_toggle_l').attr('style', 'animation: expand 150ms ease 1');
+                    await sleep(150)
+                    document.getElementById("send_btn").style.visibility = "hidden";
+                    document.getElementById("mic_toggle").dispatchEvent(new Event('change'));
+                }, 500)
+            });
+            $('#send_btn').on('mouseup touchend', function () {
+                clearTimeout(timeout)
+            });
+        })
+    </script>
+    <header>
+        <label id="status_lbl" class="status_label slide_animation" style="animation-duration:1.5s;">Offline</label>
+
+        <button id="clear_btn" onclick="clear_messages()" class="slide_animation"
+            style="animation-duration:1.5s;">Clear</button>
+
+        <input type="checkbox" id="scroll_toggle" class="toggle" onchange="toggle_scroll(this)">
+        <label for="scroll_toggle" class="slide_animation" style="animation-duration:1.5s;">Scrollable</label>
+        
+        <input type="checkbox" id="dark_mode_toggle" class="toggle" onchange="toggle_dark_mode(this)">
+        <label for="dark_mode_toggle" class="slide_animation" style="animation-duration:1.5s;">Dark mode</label>
+    </header>
+    <!-- scroll down button -->
+    <div id="sticky_box" class="sticky_container">
+        <button id="scroll_btn" onclick="scroll_to_bottom()" class="material-icons"
+            style="opacity: 0">keyboard_double_arrow_down</button>
+    </div>
+    <section>
+        <!-- div and inputs -->
+        <div id="message_box" class="message_container rise_animation" style="animation-duration:1s;"></div>
+        <input type="text" id="username" placeholder="Name" class="rise_animation" style="animation-duration:1.75s;">
+        <input type="text" id="message" placeholder="Message" size="40" onkeyup="checkForEnterKey(this.value)"
+            class="rise_animation" style="animation-duration:2s;">
+
+        <!-- send and mic button -->
+        <label id="button_box" class="rise_animation"
+            style="animation-duration:2.25s;margin-left:3px;padding:8px 20px;">
+            <input type="checkbox" id="mic_toggle" class="mic_toggle">
+            <label for="mic_toggle" id="mic_toggle_l" class="material-icons" style="visibility: hidden;">mic</label>
+            <button id="send_btn" class="material-icons">arrow_forward</button>
+        </label>
+
+    </section>
+    <audio id="audio_stream" muted="muted"></audio>
+</body>
+
+</html>
